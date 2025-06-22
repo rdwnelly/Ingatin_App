@@ -10,23 +10,17 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Query
 import com.ridwanelly.ingatin.adapters.JadwalAdapter
 import com.ridwanelly.ingatin.models.MataKuliah
 
-// =====================================================================================
-// PERUBAHAN 1: MainActivity sekarang "berjanji" untuk mematuhi kontrak OnItemClickListener
-// =====================================================================================
 class MainActivity : AppCompatActivity(), JadwalAdapter.OnItemClickListener {
 
-    // --- Deklarasi Variabel untuk Komponen UI dan Adapter ---
     private lateinit var rvJadwal: RecyclerView
     private lateinit var fabAddJadwal: FloatingActionButton
     private lateinit var tvEmptyView: TextView
     private lateinit var jadwalAdapter: JadwalAdapter
-    private val jadwalList = mutableListOf<MataKuliah>()
+    private val itemList = mutableListOf<Any>() // Menggunakan List<Any>
 
-    // --- Deklarasi Variabel untuk Firebase ---
     private lateinit var db: FirebaseFirestore
     private lateinit var auth: FirebaseAuth
 
@@ -34,71 +28,78 @@ class MainActivity : AppCompatActivity(), JadwalAdapter.OnItemClickListener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Inisialisasi Firebase
         auth = FirebaseAuth.getInstance()
         db = FirebaseFirestore.getInstance()
 
-        // Pengecekan krusial: Jika pengguna belum login, jangan lanjutkan.
-        // Kembalikan ke halaman Login.
         if (auth.currentUser == null) {
             startActivity(Intent(this, LoginActivity::class.java))
             finish()
-            return // Hentikan eksekusi lebih lanjut dari fungsi onCreate
+            return
         }
 
-        // Menghubungkan variabel dengan komponen di layout XML
         rvJadwal = findViewById(R.id.rvJadwal)
         fabAddJadwal = findViewById(R.id.fabAddJadwal)
         tvEmptyView = findViewById(R.id.tvEmptyView)
 
-        // Memanggil fungsi untuk mempersiapkan RecyclerView
         setupRecyclerView()
 
-        // Memberi aksi pada tombol FAB (+)
         fabAddJadwal.setOnClickListener {
             startActivity(Intent(this, AddJadwalActivity::class.java))
         }
 
-        // Memanggil fungsi untuk mengambil data jadwal dari Firestore
         fetchJadwalFromFirestore()
     }
 
     private fun setupRecyclerView() {
-        // =====================================================================================
-        // PERUBAHAN 2: Saat membuat Adapter, kita berikan "this" (MainActivity itu sendiri)
-        // sebagai listener-nya.
-        // =====================================================================================
-        jadwalAdapter = JadwalAdapter(jadwalList, this)
+        jadwalAdapter = JadwalAdapter(itemList, this)
         rvJadwal.layoutManager = LinearLayoutManager(this)
         rvJadwal.adapter = jadwalAdapter
     }
 
     private fun fetchJadwalFromFirestore() {
-        val userId = auth.currentUser?.uid
-        if (userId == null) return // Keluar dari fungsi jika user ID tidak ditemukan
+        val userId = auth.currentUser?.uid ?: return
 
-        // Menggunakan addSnapshotListener untuk mendapatkan data real-time
         db.collection("users").document(userId).collection("jadwal")
-            .orderBy("hari") // Mengurutkan jadwal berdasarkan hari
+            .orderBy("jamMulai") // Cukup urutkan berdasarkan jam
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
-                    // Tangani error di sini, misalnya dengan Toast
+                    // Tangani error di sini
                     return@addSnapshotListener
                 }
 
                 if (snapshot != null) {
-                    jadwalList.clear() // Kosongkan daftar lama sebelum diisi data baru
-                    val result = snapshot.toObjects(MataKuliah::class.java)
-                    jadwalList.addAll(result)
-                    jadwalAdapter.updateData(jadwalList) // Beritahu adapter bahwa data telah berubah
+                    val jadwalFromDb = snapshot.toObjects(MataKuliah::class.java)
 
-                    checkIfEmpty() // Periksa apakah daftar sekarang kosong atau tidak
+                    // --- LOGIKA BARU UNTUK PENGURUTAN HARI ---
+
+                    // 1. Definisikan urutan hari yang benar
+                    val urutanHari = listOf("Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu")
+
+                    // 2. Kelompokkan jadwal berdasarkan hari
+                    val jadwalPerHari = jadwalFromDb.groupBy { it.hari }
+
+                    // 3. Bangun list akhir sesuai urutan hari yang benar
+                    itemList.clear()
+                    urutanHari.forEach { hari ->
+                        // Ambil daftar jadwal untuk hari ini
+                        val jadwalHariIni = jadwalPerHari[hari]
+
+                        // Jika ada jadwal di hari ini, tambahkan header dan jadwalnya
+                        if (!jadwalHariIni.isNullOrEmpty()) {
+                            itemList.add(hari) // Tambah header hari (String)
+                            itemList.addAll(jadwalHariIni) // Tambah semua jadwal di hari itu (MataKuliah)
+                        }
+                    }
+                    // --- AKHIR LOGIKA BARU ---
+
+                    jadwalAdapter.updateData(itemList)
+                    checkIfEmpty()
                 }
             }
     }
 
     private fun checkIfEmpty() {
-        if (jadwalList.isEmpty()) {
+        if (itemList.isEmpty()) {
             rvJadwal.visibility = View.GONE
             tvEmptyView.visibility = View.VISIBLE
         } else {
@@ -107,16 +108,9 @@ class MainActivity : AppCompatActivity(), JadwalAdapter.OnItemClickListener {
         }
     }
 
-    // =====================================================================================
-    // PERUBAHAN 3: Ini adalah fungsi yang wajib kita buat karena "janji" di atas.
-    // Fungsi ini akan dieksekusi ketika sebuah item di adapter diklik.
-    // =====================================================================================
     override fun onItemClick(mataKuliah: MataKuliah) {
-        // Buat Intent untuk membuka DetailMatkulActivity
         val intent = Intent(this, DetailMatkulActivity::class.java)
 
-        // Lampirkan semua data dari mata kuliah yang diklik ke dalam Intent.
-        // Ini seperti memberi "catatan" untuk halaman berikutnya.
         intent.putExtra("MATKUL_ID", mataKuliah.id)
         intent.putExtra("MATKUL_NAMA", mataKuliah.namaMatkul)
         intent.putExtra("MATKUL_DOSEN", mataKuliah.dosen)
@@ -125,7 +119,6 @@ class MainActivity : AppCompatActivity(), JadwalAdapter.OnItemClickListener {
         intent.putExtra("MATKUL_JAM_SELESAI", mataKuliah.jamSelesai)
         intent.putExtra("MATKUL_RUANGAN", mataKuliah.ruangan)
 
-        // Mulai Activity baru dengan Intent yang sudah berisi data
         startActivity(intent)
     }
 }

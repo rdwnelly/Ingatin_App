@@ -23,8 +23,8 @@ class LoginActivity : AppCompatActivity() {
         if (auth.currentUser == null) {
             // Tetap di LoginActivity
         } else {
-            // Jika sudah login, arahkan ke MainActivity
-            startActivity(Intent(this, MainActivity::class.java))
+            // Jika sudah login, arahkan ke DashboardActivity (PERUBAHAN DI SINI)
+            startActivity(Intent(this, DashboardActivity::class.java))
             finish()
         }
 
@@ -47,7 +47,8 @@ class LoginActivity : AppCompatActivity() {
                     if (task.isSuccessful) {
                         // Login berhasil
                         Toast.makeText(this, "Login Berhasil!", Toast.LENGTH_SHORT).show()
-                        startActivity(Intent(this, MainActivity::class.java))
+                        // Arahkan ke DashboardActivity (PERUBAHAN DI SINI)
+                        startActivity(Intent(this, DashboardActivity::class.java))
                         finish()
                     } else {
                         // Login gagal

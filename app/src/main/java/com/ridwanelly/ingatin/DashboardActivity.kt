@@ -109,7 +109,7 @@ class DashboardActivity : AppCompatActivity(), JadwalAdapter.OnItemClickListener
                 jadwalList.clear()
                 val result = documents.toObjects(MataKuliah::class.java)
                 jadwalList.addAll(result)
-                jadwalAdapter.updateData(jadwalList)
+                jadwalAdapter.updateData(jadwalList, rvJadwalHariIni)
                 checkIfJadwalEmpty()
             }
     }
@@ -132,7 +132,7 @@ class DashboardActivity : AppCompatActivity(), JadwalAdapter.OnItemClickListener
                 tugasList.clear()
                 val result = documents.toObjects(Tugas::class.java)
                 tugasList.addAll(result)
-                tugasAdapter.updateData(tugasList)
+                tugasAdapter.updateData(tugasList, rvTugasMendatang)
                 checkIfTugasEmpty()
             }
     }

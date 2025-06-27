@@ -4,9 +4,13 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.TextView
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.work.WorkManager
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -31,23 +35,30 @@ class MainActivity : AppCompatActivity(), JadwalAdapter.OnItemClickListener {
         auth = FirebaseAuth.getInstance()
         db = FirebaseFirestore.getInstance()
 
+        // Pengguna yang belum login akan diarahkan ke Dashboard/Login,
+        // jadi halaman ini diasumsikan hanya untuk pengguna yang sudah login.
         if (auth.currentUser == null) {
             startActivity(Intent(this, LoginActivity::class.java))
             finish()
             return
         }
 
+        initViews()
+        setupRecyclerView()
+        fetchJadwalFromFirestore()
+
+        // Panggil fungsi untuk mengaktifkan fitur geser-untuk-hapus
+        setupSwipeToDelete()
+    }
+
+    private fun initViews() {
         rvJadwal = findViewById(R.id.rvJadwal)
         fabAddJadwal = findViewById(R.id.fabAddJadwal)
         tvEmptyView = findViewById(R.id.tvEmptyView)
 
-        setupRecyclerView()
-
         fabAddJadwal.setOnClickListener {
             startActivity(Intent(this, AddJadwalActivity::class.java))
         }
-
-        fetchJadwalFromFirestore()
     }
 
     private fun setupRecyclerView() {
@@ -60,39 +71,27 @@ class MainActivity : AppCompatActivity(), JadwalAdapter.OnItemClickListener {
         val userId = auth.currentUser?.uid ?: return
 
         db.collection("users").document(userId).collection("jadwal")
-            .orderBy("jamMulai") // Cukup urutkan berdasarkan jam
+            .orderBy("jamMulai")
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
-                    // Tangani error di sini
+                    // Tangani error
                     return@addSnapshotListener
                 }
 
                 if (snapshot != null) {
                     val jadwalFromDb = snapshot.toObjects(MataKuliah::class.java)
-
-                    // --- LOGIKA BARU UNTUK PENGURUTAN HARI ---
-
-                    // 1. Definisikan urutan hari yang benar
                     val urutanHari = listOf("Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu")
-
-                    // 2. Kelompokkan jadwal berdasarkan hari
                     val jadwalPerHari = jadwalFromDb.groupBy { it.hari }
 
-                    // 3. Bangun list akhir sesuai urutan hari yang benar
                     itemList.clear()
                     urutanHari.forEach { hari ->
-                        // Ambil daftar jadwal untuk hari ini
                         val jadwalHariIni = jadwalPerHari[hari]
-
-                        // Jika ada jadwal di hari ini, tambahkan header dan jadwalnya
                         if (!jadwalHariIni.isNullOrEmpty()) {
-                            itemList.add(hari) // Tambah header hari (String)
-                            itemList.addAll(jadwalHariIni) // Tambah semua jadwal di hari itu (MataKuliah)
+                            itemList.add(hari)
+                            itemList.addAll(jadwalHariIni)
                         }
                     }
-                    // --- AKHIR LOGIKA BARU ---
-
-                    jadwalAdapter.updateData(itemList)
+                    jadwalAdapter.updateData(itemList, rvJadwal)
                     checkIfEmpty()
                 }
             }
@@ -109,16 +108,77 @@ class MainActivity : AppCompatActivity(), JadwalAdapter.OnItemClickListener {
     }
 
     override fun onItemClick(mataKuliah: MataKuliah) {
-        val intent = Intent(this, DetailMatkulActivity::class.java)
-
-        intent.putExtra("MATKUL_ID", mataKuliah.id)
-        intent.putExtra("MATKUL_NAMA", mataKuliah.namaMatkul)
-        intent.putExtra("MATKUL_DOSEN", mataKuliah.dosen)
-        intent.putExtra("MATKUL_HARI", mataKuliah.hari)
-        intent.putExtra("MATKUL_JAM_MULAI", mataKuliah.jamMulai)
-        intent.putExtra("MATKUL_JAM_SELESAI", mataKuliah.jamSelesai)
-        intent.putExtra("MATKUL_RUANGAN", mataKuliah.ruangan)
-
+        val intent = Intent(this, DetailMatkulActivity::class.java).apply {
+            putExtra("MATKUL_ID", mataKuliah.id)
+            putExtra("MATKUL_NAMA", mataKuliah.namaMatkul)
+            putExtra("MATKUL_DOSEN", mataKuliah.dosen)
+            putExtra("MATKUL_HARI", mataKuliah.hari)
+            putExtra("MATKUL_JAM_MULAI", mataKuliah.jamMulai)
+            putExtra("MATKUL_JAM_SELESAI", mataKuliah.jamSelesai)
+            putExtra("MATKUL_RUANGAN", mataKuliah.ruangan)
+        }
         startActivity(intent)
+    }
+
+    // --- FUNGSI BARU UNTUK SWIPE-TO-DELETE ---
+    private fun setupSwipeToDelete() {
+        val itemTouchHelperCallback = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
+            override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean {
+                return false
+            }
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val position = viewHolder.adapterPosition
+                // Pastikan item yang di-swipe adalah MataKuliah, bukan header hari
+                if (itemList[position] is MataKuliah) {
+                    val mataKuliah = itemList[position] as MataKuliah
+                    showDeleteConfirmationDialog(mataKuliah, position)
+                } else {
+                    // Jika yang di-swipe adalah header, kembalikan ke posisi semula
+                    jadwalAdapter.notifyItemChanged(position)
+                }
+            }
+
+            override fun getSwipeDirs(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder): Int {
+                // Jangan izinkan swipe pada header hari
+                if (itemList[viewHolder.adapterPosition] is String) {
+                    return 0
+                }
+                return super.getSwipeDirs(recyclerView, viewHolder)
+            }
+        }
+        val itemTouchHelper = ItemTouchHelper(itemTouchHelperCallback)
+        itemTouchHelper.attachToRecyclerView(rvJadwal)
+    }
+
+    private fun showDeleteConfirmationDialog(mataKuliah: MataKuliah, position: Int) {
+        AlertDialog.Builder(this)
+            .setTitle("Hapus Jadwal")
+            .setMessage("Anda yakin ingin menghapus jadwal ${mataKuliah.namaMatkul}? Pengingat mingguan untuk jadwal ini juga akan dihapus.")
+            .setPositiveButton("Hapus") { _, _ ->
+                deleteJadwal(mataKuliah)
+            }
+            .setNegativeButton("Batal") { _, _ ->
+                // Jika dibatalkan, kembalikan item yang di-swipe
+                jadwalAdapter.notifyItemChanged(position)
+            }
+            .setCancelable(false)
+            .show()
+    }
+
+    private fun deleteJadwal(mataKuliah: MataKuliah) {
+        val userId = auth.currentUser?.uid ?: return
+        val jadwalId = mataKuliah.id ?: return
+
+        db.collection("users").document(userId).collection("jadwal").document(jadwalId)
+            .delete()
+            .addOnSuccessListener {
+                Toast.makeText(this, "Jadwal berhasil dihapus", Toast.LENGTH_SHORT).show()
+                // Batalkan notifikasi berulang yang terkait dengan jadwalId sebagai tag uniknya
+                WorkManager.getInstance(this).cancelUniqueWork(jadwalId)
+            }
+            .addOnFailureListener { e ->
+                Toast.makeText(this, "Gagal menghapus: ${e.message}", Toast.LENGTH_LONG).show()
+            }
     }
 }

@@ -88,7 +88,7 @@ class JadwalAdapter(
 
     override fun getItemCount(): Int = itemList.size
 
-    fun updateData(newItemList: List<Any>) {
+    fun updateData(newItemList: List<Any>, rvJadwalHariIni: RecyclerView) {
         this.itemList = newItemList
         notifyDataSetChanged()
     }

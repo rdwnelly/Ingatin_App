@@ -34,8 +34,9 @@ class TugasAdapter(private var tugasList: List<Tugas>) : RecyclerView.Adapter<Tu
 
         // Format timestamp ke tanggal yang mudah dibaca
         tugas.deadline?.let { timestamp ->
-            val sdf = SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault())
-            holder.deadlineTugas.text = "Deadline: ${sdf.format(timestamp.toDate())}"
+            val sdf = SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.getDefault())
+            val deadlineText = holder.itemView.context.getString(R.string.deadline_format, sdf.format(timestamp.toDate()))
+            holder.deadlineTugas.text = deadlineText
         }
 
         updateStrikethrough(holder.namaTugas, tugas.isCompleted)
@@ -61,6 +62,8 @@ class TugasAdapter(private var tugasList: List<Tugas>) : RecyclerView.Adapter<Tu
                 }
             }
         }
+
+        // Hapus notifyItemChanged(position) dari sini
     }
 
     private fun updateStrikethrough(textView: TextView, isCompleted: Boolean) {
@@ -73,8 +76,14 @@ class TugasAdapter(private var tugasList: List<Tugas>) : RecyclerView.Adapter<Tu
 
     override fun getItemCount(): Int = tugasList.size
 
-    fun updateData(newTugasList: List<Tugas>) {
+    fun updateData(newTugasList: List<Tugas>, recyclerView: RecyclerView? = null) {
         this.tugasList = newTugasList
-        notifyDataSetChanged()
+        if (recyclerView != null) {
+            recyclerView.post {
+                notifyItemRangeChanged(0, newTugasList.size)
+            }
+        } else {
+            notifyItemRangeChanged(0, newTugasList.size)
+        }
     }
 }

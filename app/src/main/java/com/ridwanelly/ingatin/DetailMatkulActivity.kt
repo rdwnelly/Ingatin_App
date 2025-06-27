@@ -129,7 +129,7 @@ class DetailMatkulActivity : AppCompatActivity() {
                     tugasList.clear()
                     val result = snapshot.toObjects(Tugas::class.java)
                     tugasList.addAll(result)
-                    tugasAdapter.updateData(tugasList)
+                    tugasAdapter.updateData(tugasList, rvTugas)
                     checkIfTugasEmpty()
                 }
             }

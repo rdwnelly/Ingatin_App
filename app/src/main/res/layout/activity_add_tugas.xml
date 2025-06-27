@@ -56,6 +56,18 @@
         android:textSize="16sp"
         tools:text="Deadline: 25 Jun 2025, 23:59"/>
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Ingatkan saya:"
+        android:layout_marginTop="16dp"
+        android:labelFor="@+id/spinnerNotifikasi" />
+
+    <Spinner
+        android:id="@+id/spinnerNotifikasi"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp" />
     <Button
         android:id="@+id/btnSimpanTugas"
         android:layout_width="match_parent"

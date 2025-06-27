@@ -28,8 +28,10 @@ class NotificationWorker(appContext: Context, workerParams: WorkerParameters) : 
         val channelName = "Ingatin Notifications"
 
         // Untuk Android Oreo (API 26) ke atas, kita WAJIB membuat channel notifikasi
-        val channel = NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_DEFAULT)
-        notificationManager.createNotificationChannel(channel)
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_DEFAULT)
+            notificationManager.createNotificationChannel(channel)
+        }
 
         val notification = NotificationCompat.Builder(applicationContext, channelId)
             .setContentTitle(title)

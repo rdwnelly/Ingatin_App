@@ -1,12 +1,19 @@
 package com.ridwanelly.ingatin
 
+import android.Manifest
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
+import android.widget.ArrayAdapter
 import android.widget.Button
+import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.work.Data
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
@@ -27,12 +34,32 @@ class AddTugasActivity : AppCompatActivity() {
     private lateinit var btnPilihDeadline: Button
     private lateinit var tvDeadlineTerpilih: TextView
     private lateinit var btnSimpanTugas: Button
+    private lateinit var spinnerNotifikasi: Spinner
 
     private lateinit var db: FirebaseFirestore
     private lateinit var auth: FirebaseAuth
     private var matkulId: String? = null
 
     private var deadlineCalendar = Calendar.getInstance()
+
+    // --- KODE BARU DIMULAI DI SINI ---
+    // Launcher untuk meminta izin notifikasi.
+    private val requestPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
+            if (isGranted) {
+                // Izin diberikan, lanjutkan menyimpan tugas.
+                Toast.makeText(this, "Izin notifikasi diberikan.", Toast.LENGTH_SHORT).show()
+                proceedToSaveTugas()
+            } else {
+                // Izin ditolak, beri tahu pengguna.
+                Toast.makeText(
+                    this,
+                    "Izin notifikasi ditolak. Pengingat tidak akan muncul.",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        }
+    // --- KODE BARU BERAKHIR DI SINI ---
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,13 +76,15 @@ class AddTugasActivity : AppCompatActivity() {
         auth = FirebaseAuth.getInstance()
 
         initViews()
+        setupSpinner()
 
         btnPilihDeadline.setOnClickListener {
             showDateTimePicker()
         }
 
         btnSimpanTugas.setOnClickListener {
-            saveTugas()
+            // Panggil fungsi untuk memeriksa izin sebelum menyimpan
+            checkAndSaveTugas()
         }
     }
 
@@ -65,6 +94,18 @@ class AddTugasActivity : AppCompatActivity() {
         btnPilihDeadline = findViewById(R.id.btnPilihDeadline)
         tvDeadlineTerpilih = findViewById(R.id.tvDeadlineTerpilih)
         btnSimpanTugas = findViewById(R.id.btnSimpanTugas)
+        spinnerNotifikasi = findViewById(R.id.spinnerNotifikasi)
+    }
+
+    private fun setupSpinner() {
+        ArrayAdapter.createFromResource(
+            this,
+            R.array.reminder_options,
+            android.R.layout.simple_spinner_item
+        ).also { adapter ->
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            spinnerNotifikasi.adapter = adapter
+        }
     }
 
     private fun showDateTimePicker() {
@@ -83,18 +124,56 @@ class AddTugasActivity : AppCompatActivity() {
     }
 
     private fun updateDeadlineTextView() {
-        val sdf = SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault())
-        tvDeadlineTerpilih.text = "Deadline: ${sdf.format(deadlineCalendar.time)}"
+        val sdf = SimpleDateFormat("dd MMM, HH:mm", Locale.getDefault())
+        val deadlineText = getString(R.string.deadline_format, sdf.format(deadlineCalendar.time))
+        tvDeadlineTerpilih.text = deadlineText
     }
 
-    private fun saveTugas() {
+    // --- FUNGSI INI DIPERBARUI ---
+    private fun checkAndSaveTugas() {
+        // Periksa hanya untuk Android 13 (API 33) ke atas
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            when {
+                ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) == PackageManager.PERMISSION_GRANTED -> {
+                    // Izin sudah ada, langsung simpan.
+                    proceedToSaveTugas()
+                }
+                shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS) -> {
+                    // Anda bisa menambahkan dialog penjelasan di sini jika diperlukan,
+                    // sebelum meminta izin lagi.
+                    Toast.makeText(this, "Izin notifikasi diperlukan untuk fitur pengingat.", Toast.LENGTH_LONG).show()
+                    requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                }
+                else -> {
+                    // Langsung minta izin.
+                    requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                }
+            }
+        } else {
+            // Untuk Android versi di bawah 13, izin tidak diperlukan.
+            proceedToSaveTugas()
+        }
+    }
+
+    // --- FUNGSI BARU UNTUK PROSES PENYIMPANAN ---
+    private fun proceedToSaveTugas() {
         val namaTugas = etNamaTugas.text.toString().trim()
         val deskripsi = etDeskripsiTugas.text.toString().trim()
         val deadlineTimestamp = Timestamp(deadlineCalendar.time)
         val userId = auth.currentUser?.uid
+        val reminderOption = spinnerNotifikasi.selectedItemPosition
 
         if (namaTugas.isEmpty() || userId == null) {
             Toast.makeText(this, "Nama tugas dan deadline harus diisi!", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // Pastikan deadline belum lewat
+        if (deadlineCalendar.timeInMillis <= System.currentTimeMillis()) {
+            Toast.makeText(this, "Deadline tidak boleh di masa lalu.", Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -111,8 +190,7 @@ class AddTugasActivity : AppCompatActivity() {
             .add(tugasBaru)
             .addOnSuccessListener {
                 Toast.makeText(this, "Tugas berhasil ditambahkan!", Toast.LENGTH_SHORT).show()
-                // Jadwalkan notifikasi setelah berhasil menyimpan
-                scheduleNotification(namaTugas, deskripsi, deadlineCalendar.timeInMillis)
+                scheduleNotification(namaTugas, deskripsi, deadlineCalendar.timeInMillis, reminderOption)
                 finish()
             }
             .addOnFailureListener { e ->
@@ -120,13 +198,18 @@ class AddTugasActivity : AppCompatActivity() {
             }
     }
 
-    private fun scheduleNotification(taskName: String, taskDescription: String, deadlineMillis: Long) {
+    private fun scheduleNotification(taskName: String, taskDescription: String, deadlineMillis: Long, reminderOption: Int) {
         val currentTime = System.currentTimeMillis()
-        // Kita ingin notifikasi muncul 1 jam sebelum deadline
-        val oneHourInMillis = TimeUnit.HOURS.toMillis(1)
-        val notificationTime = deadlineMillis - oneHourInMillis
 
-        // Hanya jadwalkan jika waktu notifikasi masih di masa depan
+        val reminderMillis = when (reminderOption) {
+            0 -> TimeUnit.HOURS.toMillis(1)
+            1 -> TimeUnit.DAYS.toMillis(1)
+            2 -> TimeUnit.DAYS.toMillis(2)
+            else -> TimeUnit.HOURS.toMillis(1)
+        }
+
+        val notificationTime = deadlineMillis - reminderMillis
+
         if (notificationTime > currentTime) {
             val delay = notificationTime - currentTime
 
@@ -141,6 +224,9 @@ class AddTugasActivity : AppCompatActivity() {
                 .build()
 
             WorkManager.getInstance(this).enqueue(notificationWork)
+            Toast.makeText(this, "Pengingat diatur!", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(this, "Waktu pengingat sudah lewat, tidak dapat dijadwalkan.", Toast.LENGTH_LONG).show()
         }
     }
 }

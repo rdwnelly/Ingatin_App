@@ -72,4 +72,8 @@ dependencies {
 
 // WorkManager untuk notifikasi background
     implementation("androidx.work:work-runtime-ktx:2.9.0")
+
+// Google Play Services
+    implementation("com.google.android.gms:play-services-auth:20.5.0")
+    implementation("com.google.android.gms:play-services-base:18.2.0")
 }

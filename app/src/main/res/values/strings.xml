@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">Ingatin</string>
+    <string-array name="reminder_options">
+        <item>1 Jam Sebelumnya</item>
+        <item>1 Hari Sebelumnya</item>
+        <item>2 Hari Sebelumnya</item>
+    </string-array>
+    <string name="deadline_format">Deadline: %1$s</string>
 </resources>

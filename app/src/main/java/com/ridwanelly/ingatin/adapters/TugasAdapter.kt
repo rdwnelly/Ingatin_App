@@ -7,6 +7,8 @@ import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.google.firebase.Timestamp
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ridwanelly.ingatin.R
 import com.ridwanelly.ingatin.models.Tugas
@@ -34,9 +36,8 @@ class TugasAdapter(private var tugasList: List<Tugas>) : RecyclerView.Adapter<Tu
 
         // Format timestamp ke tanggal yang mudah dibaca
         tugas.deadline?.let { timestamp ->
-            val sdf = SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.getDefault())
-            val deadlineText = holder.itemView.context.getString(R.string.deadline_format, sdf.format(timestamp.toDate()))
-            holder.deadlineTugas.text = deadlineText
+            val sdf = SimpleDateFormat("dd MMM, HH:mm", Locale("id", "ID"))
+            holder.deadlineTugas.text = "Deadline: ${sdf.format(timestamp.toDate())}"
         }
 
         updateStrikethrough(holder.namaTugas, tugas.isCompleted)
@@ -47,24 +48,37 @@ class TugasAdapter(private var tugasList: List<Tugas>) : RecyclerView.Adapter<Tu
             updateStrikethrough(holder.namaTugas, isChecked)
 
             // Update status di Firestore
-            tugas.id?.let { id ->
-                tugas.userId?.let { userId ->
-                    tugas.matkulId?.let { matkulId -> // Kita butuh semua ID ini untuk path
-                        val db = FirebaseFirestore.getInstance()
-                        db.collection("users").document(userId)
-                            .collection("tugas").document(id)
-                            .update("completed", isChecked)
-                            .addOnFailureListener {
-                                // Jika gagal, kembalikan checkbox ke state semula
-                                holder.isCompleted.isChecked = !isChecked
-                            }
-                    }
+            updateTugasCompletionStatus(tugas, isChecked, holder)
+        }
+    }
+
+    // --- FUNGSI DIPERBARUI ---
+    private fun updateTugasCompletionStatus(tugas: Tugas, isChecked: Boolean, holder: TugasViewHolder) {
+        tugas.id?.let { id ->
+            tugas.userId?.let { userId ->
+                val db = FirebaseFirestore.getInstance()
+                val tugasRef = db.collection("users").document(userId).collection("tugas").document(id)
+
+                val updateData = hashMapOf<String, Any>(
+                    "completed" to isChecked
+                )
+
+                // Jika dicentang, tambahkan waktu selesai. Jika tidak, hapus.
+                if (isChecked) {
+                    updateData["completedAt"] = FieldValue.serverTimestamp()
+                } else {
+                    updateData["completedAt"] = FieldValue.delete()
                 }
+
+                tugasRef.update(updateData)
+                    .addOnFailureListener {
+                        // Jika gagal, kembalikan checkbox ke state semula
+                        holder.isCompleted.isChecked = !isChecked
+                    }
             }
         }
-
-        // Hapus notifyItemChanged(position) dari sini
     }
+
 
     private fun updateStrikethrough(textView: TextView, isCompleted: Boolean) {
         if (isCompleted) {
@@ -78,12 +92,6 @@ class TugasAdapter(private var tugasList: List<Tugas>) : RecyclerView.Adapter<Tu
 
     fun updateData(newTugasList: List<Tugas>, recyclerView: RecyclerView? = null) {
         this.tugasList = newTugasList
-        if (recyclerView != null) {
-            recyclerView.post {
-                notifyItemRangeChanged(0, newTugasList.size)
-            }
-        } else {
-            notifyItemRangeChanged(0, newTugasList.size)
-        }
+        notifyDataSetChanged()
     }
 }

@@ -4,12 +4,35 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F4F6F9"
+    android:background="#F0F4F8"
     tools:context=".DashboardActivity">
 
-    <ScrollView
+    <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content"
+        android:background="?attr/colorPrimary"
+        app:elevation="0dp">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize">
+            <TextView
+                android:id="@+id/tvWelcome"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@android:color/white"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                tools:text="Halo, Ridwan!"/>
+        </androidx.appcompat.widget.Toolbar>
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -18,10 +41,12 @@
             android:padding="16dp">
 
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardFokusHariIni"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="12dp"
-                app:cardElevation="4dp">
+                app:cardElevation="4dp"
+                app:cardBackgroundColor="#FFFFFF">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -30,23 +55,73 @@
                     android:padding="16dp">
 
                     <TextView
-                        android:id="@+id/tvWelcome"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/welcome_dashboard"
-                        android:textSize="22sp"
+                        android:text="Fokus Hari Ini"
+                        android:textSize="18sp"
                         android:textStyle="bold"
                         android:textColor="?attr/colorPrimary" />
 
                     <TextView
-                        android:id="@+id/tvQuote"
+                        android:id="@+id/tvFokusKonten"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:textStyle="italic"
-                        tools:text="&quot;Jangan berhenti ketika lelah. Berhentilah ketika selesai.&quot;" />
+                        android:textSize="16sp"
+                        android:lineSpacingMultiplier="1.2"
+                        tools:text="• Kelas Pemrograman Mobile jam 13:00.\n• Deadline tugas Jaringan Komputer jam 23:59." />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardAnalisisMingguan"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:visibility="gone"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="2dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="#DCE4EC"
+                tools:visibility="visible">
+
+                <TextView
+                    android:id="@+id/tvAnalisisKonten"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="16dp"
+                    android:drawablePadding="8dp"
+                    android:gravity="center_vertical"
+                    android:textSize="15sp"
+                    tools:text="Selamat hari Senin! Minggu lalu kamu menyelesaikan 5 tugas. Pertahankan semangatmu!"
+                    app:drawableStartCompat="@android:drawable/ic_dialog_info"
+                    app:drawableTint="?attr/colorPrimary" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardRekomendasiBelajar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:visibility="gone"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="2dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="#DCE4EC"
+                tools:visibility="visible">
+                <TextView
+                    android:id="@+id/tvRekomendasiKonten"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="16dp"
+                    android:drawablePadding="8dp"
+                    android:gravity="center_vertical"
+                    android:textSize="15sp"
+                    tools:text="Ada waktu luang 2 jam sore ini. Pas banget buat mulai cicil tugas PPB, lho!"
+                    app:drawableStartCompat="@android:drawable/ic_lock_idle_alarm"
+                    app:drawableTint="?attr/colorPrimary" />
+            </com.google.android.material.card.MaterialCardView>
+
 
             <TextView
                 android:layout_width="wrap_content"
@@ -98,9 +173,8 @@
                 android:text="@string/tidak_ada_tugas_mendatang"
                 android:visibility="gone"
                 tools:visibility="visible"/>
-
         </LinearLayout>
-    </ScrollView>
+    </androidx.core.widget.NestedScrollView>
 
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/fabLihatJadwal"

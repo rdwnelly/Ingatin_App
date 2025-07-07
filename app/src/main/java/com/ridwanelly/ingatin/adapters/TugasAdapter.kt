@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FieldValue
@@ -16,12 +17,14 @@ import com.ridwanelly.ingatin.R
 import com.ridwanelly.ingatin.models.Tugas
 import java.text.SimpleDateFormat
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 class TugasAdapter(private var tugasList: List<Tugas>) : RecyclerView.Adapter<TugasAdapter.TugasViewHolder>() {
 
     class TugasViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val namaTugas: TextView = itemView.findViewById(R.id.tvNamaTugas)
         val deadlineTugas: TextView = itemView.findViewById(R.id.tvDeadlineTugas)
+        val deadlineTugasFull: TextView = itemView.findViewById(R.id.tvDeadlineTugasFull)
         val isCompleted: CheckBox = itemView.findViewById(R.id.cbTugasSelesai)
     }
 
@@ -32,29 +35,43 @@ class TugasAdapter(private var tugasList: List<Tugas>) : RecyclerView.Adapter<Tu
 
     override fun onBindViewHolder(holder: TugasViewHolder, position: Int) {
         val tugas = tugasList[position]
+        val context = holder.itemView.context
 
         holder.namaTugas.text = tugas.namaTugas
         holder.isCompleted.isChecked = tugas.isCompleted
 
-        // Format timestamp ke tanggal yang mudah dibaca
         tugas.deadline?.let { timestamp ->
-            val sdf = SimpleDateFormat("dd MMM, HH:mm", Locale("id", "ID"))
-            holder.deadlineTugas.text = "Deadline: ${sdf.format(timestamp.toDate())}"
+            val sdf = SimpleDateFormat("dd MMM yyyy, HH:mm", Locale("id", "ID"))
+            holder.deadlineTugasFull.text = context.getString(R.string.deadline_format, sdf.format(timestamp.toDate()))
+
+            val now = System.currentTimeMillis()
+            val deadlineMillis = timestamp.toDate().time
+            val diff = deadlineMillis - now
+
+            if (diff > 0) {
+                val days = TimeUnit.MILLISECONDS.toDays(diff)
+                val hours = TimeUnit.MILLISECONDS.toHours(diff)
+
+                val countdownText = when {
+                    days > 0 -> context.getString(R.string.countdown_format_days, days)
+                    hours > 0 -> context.getString(R.string.countdown_format_hours, hours)
+                    else -> context.getString(R.string.countdown_format_hours, 1) // Kurang dari 1 jam
+                }
+                holder.deadlineTugas.text = countdownText
+                holder.deadlineTugas.setTextColor(ContextCompat.getColor(context, R.color.colorAccent))
+            } else {
+                holder.deadlineTugas.text = context.getString(R.string.countdown_format_overdue)
+                holder.deadlineTugas.setTextColor(ContextCompat.getColor(context, R.color.colorAccent))
+            }
         }
 
         updateStrikethrough(holder.namaTugas, tugas.isCompleted)
 
-        // Hapus listener lama untuk mencegah pemanggilan ganda
         holder.isCompleted.setOnCheckedChangeListener(null)
-
-        // Set listener baru
         holder.isCompleted.setOnCheckedChangeListener { _, isChecked ->
-            // Hanya jalankan logika jika status berubah
             if (tugas.isCompleted != isChecked) {
                 tugas.isCompleted = isChecked
                 updateStrikethrough(holder.namaTugas, isChecked)
-
-                // Update status di Firestore dan berikan poin jika perlu
                 updateTugasCompletionStatus(tugas, isChecked, holder)
             }
         }
@@ -73,11 +90,8 @@ class TugasAdapter(private var tugasList: List<Tugas>) : RecyclerView.Adapter<Tu
 
         if (isChecked) {
             updateData["completedAt"] = FieldValue.serverTimestamp()
-
-            // Cek apakah tugas diselesaikan tepat waktu
             val deadline = tugas.deadline
             if (deadline != null && Timestamp.now().compareTo(deadline) <= 0) {
-                // TEPAT WAKTU: Berikan poin dan cek badge
                 awardPointsForOnTimeCompletion(db, userId, holder.itemView.context)
             }
         } else {
@@ -91,10 +105,9 @@ class TugasAdapter(private var tugasList: List<Tugas>) : RecyclerView.Adapter<Tu
             }
     }
 
-    // --- FUNGSI BARU UNTUK GAMIFIKASI ---
     private fun awardPointsForOnTimeCompletion(db: FirebaseFirestore, userId: String, context: android.content.Context) {
         val gamificationRef = db.collection("users").document(userId).collection("gamification").document("summary")
-        val pointsToAdd = 10L // Poin per tugas
+        val pointsToAdd = 10L
 
         db.runTransaction { transaction ->
             val snapshot = transaction.get(gamificationRef)
@@ -105,15 +118,13 @@ class TugasAdapter(private var tugasList: List<Tugas>) : RecyclerView.Adapter<Tu
             if (snapshot.exists()) {
                 val currentPoints = snapshot.getLong("points") ?: 0L
                 val currentSubmissions = snapshot.getLong("onTimeSubmissions") ?: 0L
-                currentBadges = (snapshot.get("badges") as? List<*> ?: emptyList<Any>()).filterIsInstance<String>().toMutableList()
+                currentBadges = (snapshot.get("badges") as? List<*>)?.filterIsInstance<String>()?.toMutableList() ?: mutableListOf()
                 newPoints = currentPoints + pointsToAdd
                 newOnTimeSubmissions = currentSubmissions + 1
             }
 
-            // Logika untuk menambahkan badge baru
             val newBadges = checkAndAwardBadges(newOnTimeSubmissions, currentBadges)
-
-            val newLevel = (newPoints / 50) + 1 // Setiap 50 poin naik level
+            val newLevel = (newPoints / 50) + 1
 
             val updateData = hashMapOf(
                 "points" to newPoints,
@@ -123,13 +134,11 @@ class TugasAdapter(private var tugasList: List<Tugas>) : RecyclerView.Adapter<Tu
             )
 
             transaction.set(gamificationRef, updateData)
-
-            // Mengembalikan daftar badge baru untuk ditampilkan di Toast
             newBadges.filter { !currentBadges.contains(it) }
         }.addOnSuccessListener { newBadgesEarned ->
             Toast.makeText(context, "+$pointsToAdd Poin! Kerja bagus!", Toast.LENGTH_SHORT).show()
             newBadgesEarned.forEach { badgeId ->
-                val badgeName = getBadgeName(badgeId) // Fungsi untuk mendapatkan nama badge
+                val badgeName = getBadgeName(badgeId)
                 Toast.makeText(context, "🏆 Badge Baru Diraih: $badgeName!", Toast.LENGTH_LONG).show()
             }
         }.addOnFailureListener { e ->
@@ -139,12 +148,10 @@ class TugasAdapter(private var tugasList: List<Tugas>) : RecyclerView.Adapter<Tu
 
     private fun checkAndAwardBadges(onTimeCount: Long, currentBadges: List<String>): List<String> {
         val newBadges = currentBadges.toMutableList()
-
         if (onTimeCount >= 1 && !newBadges.contains("FIRST_STEP")) newBadges.add("FIRST_STEP")
         if (onTimeCount >= 5 && !newBadges.contains("FIVE_STAR")) newBadges.add("FIVE_STAR")
         if (onTimeCount >= 10 && !newBadges.contains("TEN_MASTER")) newBadges.add("TEN_MASTER")
         if (onTimeCount >= 25 && !newBadges.contains("DILIGENT_25")) newBadges.add("DILIGENT_25")
-
         return newBadges
     }
 
@@ -157,8 +164,6 @@ class TugasAdapter(private var tugasList: List<Tugas>) : RecyclerView.Adapter<Tu
             else -> "Badge Spesial"
         }
     }
-    // --- AKHIR FUNGSI BARU ---
-
 
     private fun updateStrikethrough(textView: TextView, isCompleted: Boolean) {
         if (isCompleted) {
@@ -170,7 +175,7 @@ class TugasAdapter(private var tugasList: List<Tugas>) : RecyclerView.Adapter<Tu
 
     override fun getItemCount(): Int = tugasList.size
 
-    fun updateData(newTugasList: List<Tugas>, recyclerView: RecyclerView? = null) {
+    fun updateData(newTugasList: List<Tugas>, rvTugasMendatang: RecyclerView) {
         this.tugasList = newTugasList
         notifyDataSetChanged()
     }

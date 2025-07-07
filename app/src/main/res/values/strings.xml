@@ -19,19 +19,25 @@
         <item>"Jangan berhenti ketika lelah. Berhentilah ketika selesai."</item>
         <item>"Masa depan adalah milik mereka yang menyiapkan hari ini." - Malcolm X</item>
         <item>"Sedikit kemajuan setiap hari akan menghasilkan hasil yang besar."</item>
+        <item>"Kunci kesuksesan adalah fokus pada tujuan, bukan pada rintangan."</item>
+        <item>"Percayalah pada dirimu sendiri, bahkan ketika tidak ada orang lain yang melakukannya."</item>
     </string-array>
 
     <string name="deadline_format">Deadline: %1$s</string>
+    <string name="countdown_format_days">Tersisa %1$d hari lagi!</string>
+    <string name="countdown_format_hours">Tersisa %1$d jam lagi!</string>
+    <string name="countdown_format_overdue">Telah melewati batas waktu!</string>
 
-<string-array name="hari_array">
-<item>Senin</item>
-<item>Selasa</item>
-<item>Rabu</item>
-<item>Kamis</item>
-<item>Jumat</item>
-<item>Sabtu</item>
-<item>Minggu</item>
-</string-array>
+
+    <string-array name="hari_array">
+        <item>Senin</item>
+        <item>Selasa</item>
+        <item>Rabu</item>
+        <item>Kamis</item>
+        <item>Jumat</item>
+        <item>Sabtu</item>
+        <item>Minggu</item>
+    </string-array>
     <string name="jadwal_dan_tugas">Jadwal &amp; Tugas</string>
     <string name="badge_yang_diraih">Badge yang Diraih:</string>
     <string name="level_format">Level %1$d</string>
@@ -40,4 +46,10 @@
     <string name="weekly_analysis">Selamat hari Senin! Minggu lalu kamu berhasil menyelesaikan **%1$d tugas**. Pertahankan semangatmu minggu ini!</string>
     <string name="weekly_analysis_empty">Selamat hari Senin! Awali minggu dengan semangat baru untuk menjadi lebih produktif!</string>
     <string name="study_recommendation">Ada waktu luang **%1$s** mulai pukul **%2$s**. Waktu yang pas untuk mencicil tugas **%3$s**!</string>
+    <string name="fokus_hari_ini">Fokus Hari Ini</string>
+    <string name="analisis_mingguan">Analisis Mingguan</string>
+    <string name="rekomendasi_belajar">Rekomendasi Belajar</string>
+    <string name="level_dan_poin_pengguna">Level dan Poin Pengguna</string>
+    <string name="tidak_ada_jadwal_hari_ini_dashboard">Tidak ada jadwal hari ini.</string>
+    <string name="badge_earned">Badge Baru Diraih: %1$s</string>
 </resources>

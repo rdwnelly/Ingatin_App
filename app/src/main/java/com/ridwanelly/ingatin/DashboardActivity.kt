@@ -41,6 +41,8 @@ class DashboardActivity : AppCompatActivity(), JadwalAdapter.OnItemClickListener
     private lateinit var tvAnalisisKonten: TextView
     private lateinit var cardRekomendasiBelajar: CardView
     private lateinit var tvRekomendasiKonten: TextView
+    private lateinit var cardMotivation: CardView
+    private lateinit var tvMotivation: TextView
 
     // --- Variabel UI BARU untuk Gamifikasi ---
     private lateinit var cardGamifikasi: CardView
@@ -92,6 +94,8 @@ class DashboardActivity : AppCompatActivity(), JadwalAdapter.OnItemClickListener
         tvAnalisisKonten = findViewById(R.id.tvAnalisisKonten)
         cardRekomendasiBelajar = findViewById(R.id.cardRekomendasiBelajar)
         tvRekomendasiKonten = findViewById(R.id.tvRekomendasiKonten)
+        cardMotivation = findViewById(R.id.cardMotivation)
+        tvMotivation = findViewById(R.id.tvMotivation)
 
         // --- Inisialisasi View BARU untuk Gamifikasi ---
         cardGamifikasi = findViewById(R.id.cardGamifikasi)
@@ -108,6 +112,11 @@ class DashboardActivity : AppCompatActivity(), JadwalAdapter.OnItemClickListener
         val user = auth.currentUser
         val welcomeText = user?.email?.split("@")?.get(0)?.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }?.let { "Halo, $it!" } ?: "Selamat Datang!"
         tvWelcome.text = welcomeText
+
+        // Menampilkan kutipan motivasi secara acak
+        val quotes = resources.getStringArray(R.array.motivational_quotes)
+        val randomQuote = quotes.random()
+        tvMotivation.text = randomQuote
     }
 
     private fun setupRecyclerViews() {
@@ -191,7 +200,7 @@ class DashboardActivity : AppCompatActivity(), JadwalAdapter.OnItemClickListener
                 } else {
                     gamificationData.badges.forEach { badgeId ->
                         val chip = Chip(this).apply {
-                            text = "🏆 ${getBadgeName(badgeId)}"
+                            text = context.getString(R.string.badge_earned, getBadgeName(badgeId))
                             isClickable = false
                         }
                         chipGroupBadges.addView(chip)
@@ -212,27 +221,6 @@ class DashboardActivity : AppCompatActivity(), JadwalAdapter.OnItemClickListener
     }
     // --- AKHIR FUNGSI BARU ---
 
-    private fun fetchTugasMendatang(userId: String, onComplete: () -> Unit) {
-        val now = Timestamp.now()
-        val calendar = Calendar.getInstance()
-        calendar.add(Calendar.DAY_OF_YEAR, 7)
-        val sevenDaysFromNow = Timestamp(calendar.time)
-
-        db.collection("users").document(userId).collection("tugas")
-            .whereGreaterThanOrEqualTo("deadline", now)
-            .whereLessThanOrEqualTo("deadline", sevenDaysFromNow)
-            .whereEqualTo("completed", false)
-            .orderBy("deadline", Query.Direction.ASCENDING)
-            .get()
-            .addOnSuccessListener { tugasDocs ->
-                tugasList.clear()
-                val resultTugas = tugasDocs.toObjects(Tugas::class.java)
-                tugasList.addAll(resultTugas)
-                tugasAdapter.updateData(tugasList, rvTugasMendatang)
-                checkIfTugasEmpty()
-                onComplete()
-            }
-    }
 
     private fun setupFokusHariIni() {
         val fokusItems = mutableListOf<String>()

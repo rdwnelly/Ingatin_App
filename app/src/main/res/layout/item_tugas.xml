@@ -6,26 +6,27 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_marginHorizontal="16dp"
     android:layout_marginVertical="6dp"
-    app:cardCornerRadius="8dp">
+    app:cardCornerRadius="12dp"
+    app:cardElevation="4dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="12dp"
+        android:padding="16dp"
         android:gravity="center_vertical">
 
         <CheckBox
             android:id="@+id/cbTugasSelesai"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="12dp"/>
 
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:orientation="vertical"
-            android:layout_marginStart="8dp">
+            android:orientation="vertical">
 
             <TextView
                 android:id="@+id/tvNamaTugas"
@@ -33,13 +34,25 @@
                 android:layout_height="wrap_content"
                 android:textSize="16sp"
                 android:textStyle="bold"
+                android:textColor="@color/textColorPrimary"
                 tools:text="Membuat Desain UI/UX Aplikasi"/>
 
             <TextView
                 android:id="@+id/tvDeadlineTugas"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:textSize="14sp"
                 android:textColor="@color/design_default_color_error"
+                android:textStyle="bold"
+                android:layout_marginTop="4dp"
+                tools:text="Tersisa 2 hari lagi!"/>
+
+            <TextView
+                android:id="@+id/tvDeadlineTugasFull"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="12sp"
+                android:textColor="@color/textColorSecondary"
                 tools:text="Deadline: 25 Jun 2025, 23:59"/>
         </LinearLayout>
 

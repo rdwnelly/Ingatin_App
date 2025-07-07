@@ -59,7 +59,6 @@ class AddTugasActivity : AppCompatActivity() {
                 ).show()
             }
         }
-    // --- KODE BARU BERAKHIR DI SINI ---
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -83,7 +82,6 @@ class AddTugasActivity : AppCompatActivity() {
         }
 
         btnSimpanTugas.setOnClickListener {
-            // Panggil fungsi untuk memeriksa izin sebelum menyimpan
             checkAndSaveTugas()
         }
     }
@@ -129,7 +127,6 @@ class AddTugasActivity : AppCompatActivity() {
         tvDeadlineTerpilih.text = deadlineText
     }
 
-    // --- FUNGSI INI DIPERBARUI ---
     private fun checkAndSaveTugas() {
         // Periksa hanya untuk Android 13 (API 33) ke atas
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -138,17 +135,13 @@ class AddTugasActivity : AppCompatActivity() {
                     this,
                     Manifest.permission.POST_NOTIFICATIONS
                 ) == PackageManager.PERMISSION_GRANTED -> {
-                    // Izin sudah ada, langsung simpan.
                     proceedToSaveTugas()
                 }
                 shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS) -> {
-                    // Anda bisa menambahkan dialog penjelasan di sini jika diperlukan,
-                    // sebelum meminta izin lagi.
                     Toast.makeText(this, "Izin notifikasi diperlukan untuk fitur pengingat.", Toast.LENGTH_LONG).show()
                     requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                 }
                 else -> {
-                    // Langsung minta izin.
                     requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                 }
             }
@@ -171,7 +164,6 @@ class AddTugasActivity : AppCompatActivity() {
             return
         }
 
-        // Pastikan deadline belum lewat
         if (deadlineCalendar.timeInMillis <= System.currentTimeMillis()) {
             Toast.makeText(this, "Deadline tidak boleh di masa lalu.", Toast.LENGTH_SHORT).show()
             return

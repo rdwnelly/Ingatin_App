@@ -9,16 +9,11 @@ data class Tugas(
     val id: String? = null,
     val namaTugas: String? = null,
     val deskripsi: String? = null,
-    val deadline: Timestamp? = null, // Menggunakan Timestamp Firebase untuk presisi
+    val deadline: Timestamp? = null,
     var isCompleted: Boolean = false,
-    val matkulId: String? = null, // Kunci untuk menghubungkan ke MataKuliah
+    val matkulId: String? = null,
     val userId: String? = null,
-
-    // --- TAMBAHAN BARU ---
-    // Menyimpan waktu kapan tugas ditandai selesai.
-    // Ini akan digunakan untuk fitur Analisis Produktivitas Mingguan.
     val completedAt: Timestamp? = null
-    // --- AKHIR TAMBAHAN ---
 ) {
     // Konstruktor kosong yang dibutuhkan oleh Firestore
     constructor() : this(null, null, null, null, false, null, null, null)

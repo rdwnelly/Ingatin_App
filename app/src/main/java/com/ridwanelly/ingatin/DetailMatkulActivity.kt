@@ -65,7 +65,7 @@ class DetailMatkulActivity : AppCompatActivity() {
         setupRecyclerViews()
 
         fetchTugasFromFirestore()
-        fetchCatatanFromFirestore() // Panggil fungsi untuk ambil data catatan
+        fetchCatatanFromFirestore()
 
         fabAddTask.setOnClickListener {
             val intent = Intent(this, AddTugasActivity::class.java)
@@ -73,7 +73,6 @@ class DetailMatkulActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        // Listener untuk tombol simpan catatan
         btnSimpanCatatan.setOnClickListener {
             saveCatatan()
         }
@@ -102,7 +101,6 @@ class DetailMatkulActivity : AppCompatActivity() {
         rvTugas = findViewById(R.id.rvTugas)
         tvEmptyTugas = findViewById(R.id.tvEmptyTugas)
         fabAddTask = findViewById(R.id.fabAddTask)
-        // Inisialisasi view baru
         rvCatatan = findViewById(R.id.rvCatatan)
         tvEmptyCatatan = findViewById(R.id.tvEmptyCatatan)
         etCatatan = findViewById(R.id.etCatatan)
@@ -122,7 +120,6 @@ class DetailMatkulActivity : AppCompatActivity() {
 
         // Setup RecyclerView untuk Catatan
         catatanAdapter = CatatanAdapter(catatanList) { catatan ->
-            // Aksi saat tombol hapus di klik
             showDeleteConfirmationDialog(catatan)
         }
         rvCatatan.layoutManager = LinearLayoutManager(this)
@@ -130,13 +127,12 @@ class DetailMatkulActivity : AppCompatActivity() {
     }
 
     // --- FUNGSI-FUNGSI BARU UNTUK CATATAN ---
-
     private fun fetchCatatanFromFirestore() {
         val userId = auth.currentUser?.uid ?: return
 
         db.collection("users").document(userId).collection("catatan")
             .whereEqualTo("matkulId", matkulId)
-            .orderBy("timestamp", Query.Direction.DESCENDING) // Tampilkan yang terbaru di atas
+            .orderBy("timestamp", Query.Direction.DESCENDING)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
                     return@addSnapshotListener
@@ -174,8 +170,7 @@ class DetailMatkulActivity : AppCompatActivity() {
         db.collection("users").document(userId).collection("catatan")
             .add(catatanBaru)
             .addOnSuccessListener {
-                etCatatan.text.clear() // Kosongkan input
-                // Tidak perlu panggil fetch lagi karena addSnapshotListener akan otomatis update
+                etCatatan.text.clear()
                 Toast.makeText(this, "Catatan disimpan!", Toast.LENGTH_SHORT).show()
             }
             .addOnFailureListener { e ->
@@ -219,7 +214,6 @@ class DetailMatkulActivity : AppCompatActivity() {
     }
 
     // --- FUNGSI-FUNGSI LAMA UNTUK TUGAS ---
-
     private fun fetchTugasFromFirestore() {
         val userId = auth.currentUser?.uid ?: return
 

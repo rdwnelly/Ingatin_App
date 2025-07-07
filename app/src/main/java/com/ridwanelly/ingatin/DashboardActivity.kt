@@ -74,8 +74,6 @@ class DashboardActivity : AppCompatActivity(), JadwalAdapter.OnItemClickListener
         initViews()
         setupDashboard()
         setupRecyclerViews()
-
-        // Memanggil semua fungsi fetch data
         fetchAllData()
     }
 
@@ -161,7 +159,6 @@ class DashboardActivity : AppCompatActivity(), JadwalAdapter.OnItemClickListener
                         tugasList.addAll(resultTugas)
                         tugasAdapter.updateData(tugasList, rvTugasMendatang)
                         checkIfTugasEmpty()
-                        // Now both lists are loaded, update Fokus Hari Ini
                         setupFokusHariIni()
                         setupAnalisisMingguan(userId)
                         setupRekomendasiBelajar(userId)
@@ -219,8 +216,6 @@ class DashboardActivity : AppCompatActivity(), JadwalAdapter.OnItemClickListener
             else -> "Badge Spesial"
         }
     }
-    // --- AKHIR FUNGSI BARU ---
-
 
     private fun setupFokusHariIni() {
         val fokusItems = mutableListOf<String>()

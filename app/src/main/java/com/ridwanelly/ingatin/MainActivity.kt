@@ -23,7 +23,7 @@ class MainActivity : AppCompatActivity(), JadwalAdapter.OnItemClickListener {
     private lateinit var fabAddJadwal: FloatingActionButton
     private lateinit var tvEmptyView: TextView
     private lateinit var jadwalAdapter: JadwalAdapter
-    private val itemList = mutableListOf<Any>() // Menggunakan List<Any>
+    private val itemList = mutableListOf<Any>()
 
     private lateinit var db: FirebaseFirestore
     private lateinit var auth: FirebaseAuth
@@ -35,8 +35,6 @@ class MainActivity : AppCompatActivity(), JadwalAdapter.OnItemClickListener {
         auth = FirebaseAuth.getInstance()
         db = FirebaseFirestore.getInstance()
 
-        // Pengguna yang belum login akan diarahkan ke Dashboard/Login,
-        // jadi halaman ini diasumsikan hanya untuk pengguna yang sudah login.
         if (auth.currentUser == null) {
             startActivity(Intent(this, LoginActivity::class.java))
             finish()
@@ -46,8 +44,6 @@ class MainActivity : AppCompatActivity(), JadwalAdapter.OnItemClickListener {
         initViews()
         setupRecyclerView()
         fetchJadwalFromFirestore()
-
-        // Panggil fungsi untuk mengaktifkan fitur geser-untuk-hapus
         setupSwipeToDelete()
     }
 
@@ -129,18 +125,15 @@ class MainActivity : AppCompatActivity(), JadwalAdapter.OnItemClickListener {
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val position = viewHolder.adapterPosition
-                // Pastikan item yang di-swipe adalah MataKuliah, bukan header hari
                 if (itemList[position] is MataKuliah) {
                     val mataKuliah = itemList[position] as MataKuliah
                     showDeleteConfirmationDialog(mataKuliah, position)
                 } else {
-                    // Jika yang di-swipe adalah header, kembalikan ke posisi semula
                     jadwalAdapter.notifyItemChanged(position)
                 }
             }
 
             override fun getSwipeDirs(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder): Int {
-                // Jangan izinkan swipe pada header hari
                 if (itemList[viewHolder.adapterPosition] is String) {
                     return 0
                 }
@@ -159,7 +152,6 @@ class MainActivity : AppCompatActivity(), JadwalAdapter.OnItemClickListener {
                 deleteJadwal(mataKuliah)
             }
             .setNegativeButton("Batal") { _, _ ->
-                // Jika dibatalkan, kembalikan item yang di-swipe
                 jadwalAdapter.notifyItemChanged(position)
             }
             .setCancelable(false)
@@ -174,7 +166,6 @@ class MainActivity : AppCompatActivity(), JadwalAdapter.OnItemClickListener {
             .delete()
             .addOnSuccessListener {
                 Toast.makeText(this, "Jadwal berhasil dihapus", Toast.LENGTH_SHORT).show()
-                // Batalkan notifikasi berulang yang terkait dengan jadwalId sebagai tag uniknya
                 WorkManager.getInstance(this).cancelUniqueWork(jadwalId)
             }
             .addOnFailureListener { e ->

@@ -32,7 +32,7 @@ class AddJadwalActivity : AppCompatActivity() {
     private lateinit var tvJamSelesai: TextView
     private lateinit var etRuangan: TextInputEditText
     private lateinit var btnSimpanJadwal: Button
-    private lateinit var swIngatkanSaya: SwitchMaterial // <-- Variabel baru
+    private lateinit var swIngatkanSaya: SwitchMaterial
 
     private lateinit var db: FirebaseFirestore
     private lateinit var auth: FirebaseAuth
@@ -62,7 +62,7 @@ class AddJadwalActivity : AppCompatActivity() {
         tvJamSelesai = findViewById(R.id.tvJamSelesai)
         etRuangan = findViewById(R.id.etRuangan)
         btnSimpanJadwal = findViewById(R.id.btnSimpanJadwal)
-        swIngatkanSaya = findViewById(R.id.swIngatkanSaya) // <-- Inisialisasi Switch
+        swIngatkanSaya = findViewById(R.id.swIngatkanSaya)
     }
 
     private fun setupSpinner() {
@@ -119,11 +119,11 @@ class AddJadwalActivity : AppCompatActivity() {
     // --- FUNGSI BARU UNTUK MENJADWALKAN NOTIFIKASI ---
     private fun scheduleOrCancelJadwalReminder(mataKuliah: MataKuliah, isEnabled: Boolean) {
         val workManager = WorkManager.getInstance(this)
-        val workTag = mataKuliah.id ?: return // Gunakan ID unik dari Firestore sebagai tag
+        val workTag = mataKuliah.id ?: return
 
         if (isEnabled) {
             val (dayOfWeek, hour, minute) = getScheduleTime(mataKuliah)
-            if (dayOfWeek == -1) return // Waktu tidak valid
+            if (dayOfWeek == -1) return
 
             val now = Calendar.getInstance()
             val scheduledTime = Calendar.getInstance().apply {
@@ -154,15 +154,14 @@ class AddJadwalActivity : AppCompatActivity() {
                 .build()
 
             workManager.enqueueUniquePeriodicWork(
-                workTag, // Gunakan tag sebagai nama unik
-                ExistingPeriodicWorkPolicy.REPLACE, // Ganti pengingat lama jika ada
+                workTag,
+                ExistingPeriodicWorkPolicy.REPLACE,
                 periodicWorkRequest
             )
 
             Toast.makeText(this, "Pengingat mingguan diaktifkan!", Toast.LENGTH_SHORT).show()
 
         } else {
-            // Jika user tidak mau diingatkan, batalkan work request dengan tag yang sesuai
             workManager.cancelUniqueWork(workTag)
             Toast.makeText(this, "Pengingat mingguan dinonaktifkan.", Toast.LENGTH_SHORT).show()
         }

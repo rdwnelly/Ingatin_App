@@ -53,7 +53,7 @@ class RegisterActivity : AppCompatActivity() {
         }
 
         tvGoToLogin.setOnClickListener {
-            finish() // Tutup activity ini dan kembali ke LoginActivity
+            finish()
         }
     }
 }

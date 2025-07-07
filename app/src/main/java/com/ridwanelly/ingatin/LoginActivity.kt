@@ -21,9 +21,7 @@ class LoginActivity : AppCompatActivity() {
 
         // Memastikan aplikasi tetap di LoginActivity jika pengguna belum login
         if (auth.currentUser == null) {
-            // Tetap di LoginActivity
         } else {
-            // Jika sudah login, arahkan ke DashboardActivity (PERUBAHAN DI SINI)
             startActivity(Intent(this, DashboardActivity::class.java))
             finish()
         }

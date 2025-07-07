@@ -4,13 +4,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F0F4F8"
+    android:background="@drawable/gradient_background"
     tools:context=".DashboardActivity">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?attr/colorPrimary"
+        android:background="@android:color/transparent"
         app:elevation="0dp">
 
         <androidx.appcompat.widget.Toolbar
@@ -21,8 +21,8 @@
                 android:id="@+id/tvWelcome"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="@android:color/white"
-                android:textSize="20sp"
+                android:textColor="@color/colorOnPrimary"
+                android:textSize="22sp"
                 android:textStyle="bold"
                 tools:text="Halo, Ridwan!"/>
         </androidx.appcompat.widget.Toolbar>
@@ -41,12 +41,91 @@
             android:padding="16dp">
 
             <com.google.android.material.card.MaterialCardView
-                android:id="@+id/cardFokusHariIni"
+                android:id="@+id/cardGamifikasi"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="4dp"
-                app:cardBackgroundColor="#FFFFFF">
+                app:cardCornerRadius="16dp"
+                app:cardElevation="8dp"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/card_gradient_background"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:src="@android:drawable/btn_star_big_on"
+                            app:tint="@color/colorPrimary"
+                            android:contentDescription="Level dan Poin Pengguna"/>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="16dp"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/tvUserLevel"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textStyle="bold"
+                                android:textColor="@color/colorPrimary"
+                                android:textSize="18sp"
+                                tools:text="Level 5: Pejuang Skripsi" />
+
+                            <TextView
+                                android:id="@+id/tvUserPoints"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textColor="@color/textColorSecondary"
+                                tools:text="250 Poin" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:text="@string/badge_yang_diraih"
+                        android:textSize="14sp"
+                        android:textColor="@color/textColorPrimary"/>
+
+                    <com.google.android.material.chip.ChipGroup
+                        android:id="@+id/chipGroupBadges"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:layout_marginStart="8dp"
+                android:text="@string/jadwal_dan_tugas"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="@color/colorOnPrimary"/>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="4dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -57,19 +136,75 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Fokus Hari Ini"
+                        android:text="@string/jadwal_hari_ini"
                         android:textSize="18sp"
                         android:textStyle="bold"
-                        android:textColor="?attr/colorPrimary" />
+                        android:textColor="@color/colorPrimary"/>
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rvJadwalHariIni"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        tools:listitem="@layout/item_jadwal" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="?android:attr/listDivider"
+                        android:layout_marginVertical="16dp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/tugas_mendatang"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/colorPrimary" />
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rvTugasMendatang"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        tools:listitem="@layout/item_tugas" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Missing Views -->
+            <TextView
+                android:id="@+id/tvEmptyJadwal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Tidak ada jadwal hari ini."
+                android:gravity="center"
+                android:visibility="gone"
+                android:layout_marginTop="8dp"
+                android:textColor="@color/textColorSecondary"
+                android:textSize="14sp" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardFokusHariIni"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="4dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
 
                     <TextView
                         android:id="@+id/tvFokusKonten"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:textSize="16sp"
-                        android:lineSpacingMultiplier="1.2"
-                        tools:text="• Kelas Pemrograman Mobile jam 13:00.\n• Deadline tugas Jaringan Komputer jam 23:59." />
+                        android:text="Fokus Hari Ini"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/colorPrimary" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -78,24 +213,17 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:visibility="gone"
                 app:cardCornerRadius="12dp"
-                app:cardElevation="2dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="#DCE4EC"
-                tools:visibility="visible">
+                app:cardElevation="4dp">
 
                 <TextView
                     android:id="@+id/tvAnalisisKonten"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:padding="16dp"
-                    android:drawablePadding="8dp"
-                    android:gravity="center_vertical"
-                    android:textSize="15sp"
-                    tools:text="Selamat hari Senin! Minggu lalu kamu menyelesaikan 5 tugas. Pertahankan semangatmu!"
-                    app:drawableStartCompat="@android:drawable/ic_dialog_info"
-                    app:drawableTint="?attr/colorPrimary" />
+                    android:text="Analisis Mingguan"
+                    android:textSize="16sp"
+                    android:textColor="@color/textColorPrimary" />
             </com.google.android.material.card.MaterialCardView>
 
             <com.google.android.material.card.MaterialCardView
@@ -103,76 +231,18 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:visibility="gone"
                 app:cardCornerRadius="12dp"
-                app:cardElevation="2dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="#DCE4EC"
-                tools:visibility="visible">
+                app:cardElevation="4dp">
+
                 <TextView
                     android:id="@+id/tvRekomendasiKonten"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:padding="16dp"
-                    android:drawablePadding="8dp"
-                    android:gravity="center_vertical"
-                    android:textSize="15sp"
-                    tools:text="Ada waktu luang 2 jam sore ini. Pas banget buat mulai cicil tugas PPB, lho!"
-                    app:drawableStartCompat="@android:drawable/ic_lock_idle_alarm"
-                    app:drawableTint="?attr/colorPrimary" />
+                    android:text="Rekomendasi Belajar"
+                    android:textSize="16sp"
+                    android:textColor="@color/textColorPrimary" />
             </com.google.android.material.card.MaterialCardView>
-
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:text="@string/jadwal_hari_ini"
-                android:textSize="18sp"
-                android:textStyle="bold" />
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rvJadwalHariIni"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                tools:itemCount="1"
-                tools:listitem="@layout/item_jadwal" />
-
-            <TextView
-                android:id="@+id/tvEmptyJadwal"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:padding="16dp"
-                android:text="@string/tidak_ada_jadwal_hari_ini"
-                android:visibility="gone"
-                tools:visibility="visible"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="@string/tugas_mendatang"
-                android:textSize="18sp"
-                android:textStyle="bold" />
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rvTugasMendatang"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                tools:itemCount="2"
-                tools:listitem="@layout/item_tugas" />
-            <TextView
-                android:id="@+id/tvEmptyTugas"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:padding="16dp"
-                android:text="@string/tidak_ada_tugas_mendatang"
-                android:visibility="gone"
-                tools:visibility="visible"/>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
@@ -183,6 +253,9 @@
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
         android:text="@string/lihat_semua_jadwal"
-        app:icon="@drawable/ic_stat_notification" />
+        app:icon="@drawable/ic_stat_notification"
+        app:backgroundTint="@color/colorAccent"
+        android:textColor="@color/colorOnPrimary"
+        app:iconTint="@color/colorOnPrimary"/>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

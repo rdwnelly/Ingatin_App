@@ -32,4 +32,12 @@
 <item>Sabtu</item>
 <item>Minggu</item>
 </string-array>
+    <string name="jadwal_dan_tugas">Jadwal &amp; Tugas</string>
+    <string name="badge_yang_diraih">Badge yang Diraih:</string>
+    <string name="level_format">Level %1$d</string>
+    <string name="points_format">%1$d Poin</string>
+    <string name="no_badge">Belum ada badge</string>
+    <string name="weekly_analysis">Selamat hari Senin! Minggu lalu kamu berhasil menyelesaikan **%1$d tugas**. Pertahankan semangatmu minggu ini!</string>
+    <string name="weekly_analysis_empty">Selamat hari Senin! Awali minggu dengan semangat baru untuk menjadi lebih produktif!</string>
+    <string name="study_recommendation">Ada waktu luang **%1$s** mulai pukul **%2$s**. Waktu yang pas untuk mencicil tugas **%3$s**!</string>
 </resources>

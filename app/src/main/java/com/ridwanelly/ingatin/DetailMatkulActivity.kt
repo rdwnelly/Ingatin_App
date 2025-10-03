@@ -2,6 +2,7 @@ package com.ridwanelly.ingatin
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
@@ -114,19 +115,76 @@ class DetailMatkulActivity : AppCompatActivity() {
     }
 
     private fun setupRecyclerViews() {
-        tugasAdapter = TugasAdapter(tugasList)
+        // Inisialisasi TugasAdapter dengan click listener
+        tugasAdapter = TugasAdapter(tugasList) { tugas ->
+            showTugasReviewDialog(tugas)
+        }
         rvTugas.layoutManager = LinearLayoutManager(this)
         rvTugas.adapter = tugasAdapter
 
-        // Setup RecyclerView untuk Catatan
-        catatanAdapter = CatatanAdapter(catatanList) { catatan ->
-            showDeleteConfirmationDialog(catatan)
-        }
+        // Inisialisasi CatatanAdapter dengan click listener
+        catatanAdapter = CatatanAdapter(catatanList,
+            onDeleteClick = { catatan -> showDeleteConfirmationDialog(catatan) },
+            onItemClick = { catatan -> showCatatanEditDialog(catatan) }
+        )
         rvCatatan.layoutManager = LinearLayoutManager(this)
         rvCatatan.adapter = catatanAdapter
     }
 
-    // --- FUNGSI-FUNGSI BARU UNTUK CATATAN ---
+    // --- FUNGSI-FUNGSI BARU UNTUK TUGAS & CATATAN ---
+
+    private fun showTugasReviewDialog(tugas: Tugas) {
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_tinjau_tugas, null)
+        val tvNamaTugas = dialogView.findViewById<TextView>(R.id.tvDialogNamaTugas)
+        val tvDeskripsiTugas = dialogView.findViewById<TextView>(R.id.tvDialogDeskripsiTugas)
+
+        tvNamaTugas.text = tugas.namaTugas
+        tvDeskripsiTugas.text = tugas.deskripsi?.ifEmpty { "Tidak ada deskripsi." }
+
+        AlertDialog.Builder(this)
+            .setView(dialogView)
+            .setPositiveButton("Edit") { _, _ ->
+                // Belum diimplementasikan, perlu membuat EditTugasActivity
+                Toast.makeText(this, "Fitur edit belum tersedia.", Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton("Tutup", null)
+            .show()
+    }
+
+    private fun showCatatanEditDialog(catatan: Catatan) {
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_edit_catatan, null)
+        val etEditCatatan = dialogView.findViewById<EditText>(R.id.etEditCatatan)
+        etEditCatatan.setText(catatan.content)
+
+        AlertDialog.Builder(this)
+            .setTitle("Edit Catatan")
+            .setView(dialogView)
+            .setPositiveButton("Simpan") { _, _ ->
+                val newContent = etEditCatatan.text.toString().trim()
+                if (newContent.isNotEmpty() && newContent != catatan.content) {
+                    updateCatatan(catatan, newContent)
+                }
+            }
+            .setNegativeButton("Batal", null)
+            .show()
+    }
+
+    private fun updateCatatan(catatan: Catatan, newContent: String) {
+        val userId = auth.currentUser?.uid ?: return
+        if (catatan.id == null) return
+
+        db.collection("users").document(userId).collection("catatan").document(catatan.id)
+            .update("content", newContent)
+            .addOnSuccessListener {
+                Toast.makeText(this, "Catatan diperbarui.", Toast.LENGTH_SHORT).show()
+            }
+            .addOnFailureListener { e ->
+                Toast.makeText(this, "Gagal memperbarui: ${e.message}", Toast.LENGTH_LONG).show()
+            }
+    }
+
+    // --- FUNGSI-FUNGSI LAMA ---
+
     private fun fetchCatatanFromFirestore() {
         val userId = auth.currentUser?.uid ?: return
 
@@ -213,7 +271,6 @@ class DetailMatkulActivity : AppCompatActivity() {
         }
     }
 
-    // --- FUNGSI-FUNGSI LAMA UNTUK TUGAS ---
     private fun fetchTugasFromFirestore() {
         val userId = auth.currentUser?.uid ?: return
 

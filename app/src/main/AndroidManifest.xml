@@ -55,6 +55,11 @@
             android:exported="false"
             android:label="Tambah Tugas Baru" />
 
+        <activity
+            android:name=".EditTugasActivity"
+            android:exported="false"
+            android:label="Edit Tugas" />
+
     </application>
 
 </manifest>

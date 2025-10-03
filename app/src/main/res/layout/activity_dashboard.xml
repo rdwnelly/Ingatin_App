@@ -203,6 +203,18 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         tools:listitem="@layout/item_tugas" />
+
+                    <TextView
+                        android:id="@+id/tvEmptyTugas"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/tidak_ada_tugas_mendatang"
+                        android:gravity="center"
+                        android:visibility="gone"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginBottom="8dp"
+                        android:textColor="@color/textColorSecondary"
+                        android:textSize="14sp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 

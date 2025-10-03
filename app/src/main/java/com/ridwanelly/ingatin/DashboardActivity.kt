@@ -3,8 +3,10 @@ package com.ridwanelly.ingatin
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -122,10 +124,36 @@ class DashboardActivity : AppCompatActivity(), JadwalAdapter.OnItemClickListener
         rvJadwalHariIni.layoutManager = LinearLayoutManager(this)
         rvJadwalHariIni.adapter = jadwalAdapter
 
-        tugasAdapter = TugasAdapter(tugasList)
+        // ===== PERBAIKAN DI SINI =====
+        // Sekarang kita memberikan fungsi klik ke TugasAdapter
+        tugasAdapter = TugasAdapter(tugasList) { tugas ->
+            showTugasReviewDialog(tugas)
+        }
         rvTugasMendatang.layoutManager = LinearLayoutManager(this)
         rvTugasMendatang.adapter = tugasAdapter
     }
+
+    // ===== FUNGSI BARU UNTUK MENAMPILKAN DIALOG =====
+    private fun showTugasReviewDialog(tugas: Tugas) {
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_tinjau_tugas, null)
+        val tvNamaTugas = dialogView.findViewById<TextView>(R.id.tvDialogNamaTugas)
+        val tvDeskripsiTugas = dialogView.findViewById<TextView>(R.id.tvDialogDeskripsiTugas)
+
+        tvNamaTugas.text = tugas.namaTugas
+        tvDeskripsiTugas.text = tugas.deskripsi?.ifEmpty { "Tidak ada deskripsi." }
+
+        AlertDialog.Builder(this)
+            .setView(dialogView)
+            .setPositiveButton("Edit") { _, _ ->
+                val intent = Intent(this, EditTugasActivity::class.java).apply {
+                    putExtra("TUGAS_EXTRA", tugas)
+                }
+                startActivity(intent)
+            }
+            .setNegativeButton("Tutup", null)
+            .show()
+    }
+
 
     private fun fetchAllData() {
         val userId = auth.currentUser?.uid ?: return
@@ -220,35 +248,28 @@ class DashboardActivity : AppCompatActivity(), JadwalAdapter.OnItemClickListener
     private fun setupFokusHariIni() {
         val fokusItems = mutableListOf<String>()
 
-        // 1. Tambahkan info jadwal terdekat jika ada
         if (jadwalList.isNotEmpty()) {
             val jadwalTerdekat = jadwalList.first()
             fokusItems.add("• Ada kelas **${jadwalTerdekat.namaMatkul}** jam ${jadwalTerdekat.jamMulai}.")
         }
 
-        // 2. Filter tugas yang deadline-nya hari ini (dengan aman)
         val todayCalendar = Calendar.getInstance()
         val tugasHariIni = tugasList.filter { tugas ->
-            // Cek apakah deadline tidak null sebelum digunakan
             tugas.deadline?.let { deadlineTimestamp ->
                 val deadlineCalendar = Calendar.getInstance().apply { time = deadlineTimestamp.toDate() }
                 todayCalendar.get(Calendar.YEAR) == deadlineCalendar.get(Calendar.YEAR) &&
                         todayCalendar.get(Calendar.DAY_OF_YEAR) == deadlineCalendar.get(Calendar.DAY_OF_YEAR)
-            } ?: false // Jika deadline null, anggap false
+            } ?: false
         }
 
-        // 3. Tambahkan info tugas terdekat jika ada
         if (tugasHariIni.isNotEmpty()) {
             val tugasTerdekat = tugasHariIni.first()
             fokusItems.add("• Deadline tugas **${tugasTerdekat.namaTugas}** hari ini.")
         }
 
-        // 4. Jika tidak ada fokus sama sekali, tampilkan pesan santai
         if (fokusItems.isEmpty()) {
-            // Kartu akan tetap disembunyikan jika tidak ada apa-apa
             cardFokusHariIni.visibility = View.GONE
         } else {
-            // Jika ada fokus, gabungkan pesannya dan tampilkan kartunya
             tvFokusKonten.text = fokusItems.joinToString("\n")
             cardFokusHariIni.visibility = View.VISIBLE
         }

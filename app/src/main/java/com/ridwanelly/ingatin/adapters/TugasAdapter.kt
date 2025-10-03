@@ -19,13 +19,22 @@ import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
 
-class TugasAdapter(private var tugasList: List<Tugas>) : RecyclerView.Adapter<TugasAdapter.TugasViewHolder>() {
+class TugasAdapter(
+    private var tugasList: List<Tugas>,
+    private val onItemClick: (Tugas) -> Unit // Listener untuk klik item
+) : RecyclerView.Adapter<TugasAdapter.TugasViewHolder>() {
 
     class TugasViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val namaTugas: TextView = itemView.findViewById(R.id.tvNamaTugas)
         val deadlineTugas: TextView = itemView.findViewById(R.id.tvDeadlineTugas)
         val deadlineTugasFull: TextView = itemView.findViewById(R.id.tvDeadlineTugasFull)
         val isCompleted: CheckBox = itemView.findViewById(R.id.cbTugasSelesai)
+
+        fun bind(tugas: Tugas, onItemClick: (Tugas) -> Unit) {
+            itemView.setOnClickListener {
+                onItemClick(tugas)
+            }
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TugasViewHolder {
@@ -36,6 +45,9 @@ class TugasAdapter(private var tugasList: List<Tugas>) : RecyclerView.Adapter<Tu
     override fun onBindViewHolder(holder: TugasViewHolder, position: Int) {
         val tugas = tugasList[position]
         val context = holder.itemView.context
+
+        // Bind click listener
+        holder.bind(tugas, onItemClick)
 
         holder.namaTugas.text = tugas.namaTugas
         holder.isCompleted.isChecked = tugas.isCompleted
@@ -68,6 +80,7 @@ class TugasAdapter(private var tugasList: List<Tugas>) : RecyclerView.Adapter<Tu
         updateStrikethrough(holder.namaTugas, tugas.isCompleted)
 
         holder.isCompleted.setOnCheckedChangeListener(null)
+        holder.isCompleted.isChecked = tugas.isCompleted
         holder.isCompleted.setOnCheckedChangeListener { _, isChecked ->
             if (tugas.isCompleted != isChecked) {
                 tugas.isCompleted = isChecked

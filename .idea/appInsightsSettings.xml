@@ -10,9 +10,9 @@
               <option name="connection">
                 <ConnectionSetting>
                   <option name="appId" value="com.ridwanelly.ingatin" />
-                  <option name="mobileSdkAppId" value="1:8822673299:android:df5afd2e72a57d3a6da266" />
-                  <option name="projectId" value="ingatin-app" />
-                  <option name="projectNumber" value="8822673299" />
+                  <option name="mobileSdkAppId" value="1:240642462159:android:d042457b919dd52a2cc2ba" />
+                  <option name="projectId" value="ingatinappproject" />
+                  <option name="projectNumber" value="240642462159" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

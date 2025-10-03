@@ -223,7 +223,9 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 app:cardCornerRadius="12dp"
-                app:cardElevation="4dp">
+                app:cardElevation="4dp"
+                android:visibility="gone"
+                tools:visibility="visible">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -232,13 +234,21 @@
                     android:padding="16dp">
 
                     <TextView
-                        android:id="@+id/tvFokusKonten"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/fokus_hari_ini"
                         android:textSize="18sp"
                         android:textStyle="bold"
                         android:textColor="@color/colorPrimary" />
+
+                    <TextView
+                        android:id="@+id/tvFokusKonten"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:textSize="16sp"
+                        android:textColor="@color/textColorPrimary"
+                        tools:text="• Ada kelas E-Learning jam 09:40.\n• Deadline tugas UI/UX hari ini." />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 

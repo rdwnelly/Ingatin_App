@@ -220,29 +220,38 @@ class DashboardActivity : AppCompatActivity(), JadwalAdapter.OnItemClickListener
     private fun setupFokusHariIni() {
         val fokusItems = mutableListOf<String>()
 
+        // 1. Tambahkan info jadwal terdekat jika ada
         if (jadwalList.isNotEmpty()) {
             val jadwalTerdekat = jadwalList.first()
             fokusItems.add("• Ada kelas **${jadwalTerdekat.namaMatkul}** jam ${jadwalTerdekat.jamMulai}.")
         }
 
+        // 2. Filter tugas yang deadline-nya hari ini (dengan aman)
         val todayCalendar = Calendar.getInstance()
-        val tugasHariIni = tugasList.filter {
-            val deadlineCalendar = Calendar.getInstance().apply { time = it.deadline!!.toDate() }
-            todayCalendar.get(Calendar.YEAR) == deadlineCalendar.get(Calendar.YEAR) &&
-                    todayCalendar.get(Calendar.DAY_OF_YEAR) == deadlineCalendar.get(Calendar.DAY_OF_YEAR)
+        val tugasHariIni = tugasList.filter { tugas ->
+            // Cek apakah deadline tidak null sebelum digunakan
+            tugas.deadline?.let { deadlineTimestamp ->
+                val deadlineCalendar = Calendar.getInstance().apply { time = deadlineTimestamp.toDate() }
+                todayCalendar.get(Calendar.YEAR) == deadlineCalendar.get(Calendar.YEAR) &&
+                        todayCalendar.get(Calendar.DAY_OF_YEAR) == deadlineCalendar.get(Calendar.DAY_OF_YEAR)
+            } ?: false // Jika deadline null, anggap false
         }
 
+        // 3. Tambahkan info tugas terdekat jika ada
         if (tugasHariIni.isNotEmpty()) {
             val tugasTerdekat = tugasHariIni.first()
             fokusItems.add("• Deadline tugas **${tugasTerdekat.namaTugas}** hari ini.")
         }
 
+        // 4. Jika tidak ada fokus sama sekali, tampilkan pesan santai
         if (fokusItems.isEmpty()) {
-            fokusItems.add("Hari ini santai! Tidak ada kelas atau deadline tugas mendesak.")
+            // Kartu akan tetap disembunyikan jika tidak ada apa-apa
+            cardFokusHariIni.visibility = View.GONE
+        } else {
+            // Jika ada fokus, gabungkan pesannya dan tampilkan kartunya
+            tvFokusKonten.text = fokusItems.joinToString("\n")
+            cardFokusHariIni.visibility = View.VISIBLE
         }
-
-        tvFokusKonten.text = fokusItems.joinToString("\n")
-        cardFokusHariIni.visibility = View.VISIBLE
     }
 
     private fun setupAnalisisMingguan(userId: String) {

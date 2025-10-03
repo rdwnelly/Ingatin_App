@@ -137,8 +137,8 @@ class AddJadwalActivity : AppCompatActivity() {
                 }
             }
 
-            // Pengingat 30 menit sebelum kelas dimulai
-            scheduledTime.add(Calendar.MINUTE, -30)
+            // Pengingat 1 jam sebelum kelas dimulai
+            scheduledTime.add(Calendar.MINUTE, -60)
 
             val initialDelay = scheduledTime.timeInMillis - now.timeInMillis
 

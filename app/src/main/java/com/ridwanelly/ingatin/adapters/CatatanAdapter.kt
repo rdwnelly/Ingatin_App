@@ -14,7 +14,7 @@ import java.util.*
 class CatatanAdapter(
     private var catatanList: List<Catatan>,
     private val onDeleteClick: (Catatan) -> Unit,
-    private val onItemClick: (Catatan) -> Unit // Listener untuk klik item
+    private val onItemClick: (Catatan) -> Unit
 ) : RecyclerView.Adapter<CatatanAdapter.CatatanViewHolder>() {
 
     class CatatanViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -41,7 +41,6 @@ class CatatanAdapter(
             onDeleteClick(catatan)
         }
 
-        // Tambahkan listener klik untuk seluruh item
         holder.itemView.setOnClickListener {
             onItemClick(catatan)
         }

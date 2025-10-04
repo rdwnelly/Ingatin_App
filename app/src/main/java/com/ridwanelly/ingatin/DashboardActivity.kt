@@ -124,7 +124,6 @@ class DashboardActivity : AppCompatActivity(), JadwalAdapter.OnItemClickListener
         rvJadwalHariIni.layoutManager = LinearLayoutManager(this)
         rvJadwalHariIni.adapter = jadwalAdapter
 
-        // ===== PERBAIKAN DI SINI =====
         // Sekarang kita memberikan fungsi klik ke TugasAdapter
         tugasAdapter = TugasAdapter(tugasList) { tugas ->
             showTugasReviewDialog(tugas)
@@ -133,7 +132,6 @@ class DashboardActivity : AppCompatActivity(), JadwalAdapter.OnItemClickListener
         rvTugasMendatang.adapter = tugasAdapter
     }
 
-    // ===== FUNGSI BARU UNTUK MENAMPILKAN DIALOG =====
     private fun showTugasReviewDialog(tugas: Tugas) {
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_tinjau_tugas, null)
         val tvNamaTugas = dialogView.findViewById<TextView>(R.id.tvDialogNamaTugas)
@@ -197,7 +195,6 @@ class DashboardActivity : AppCompatActivity(), JadwalAdapter.OnItemClickListener
             }
     }
 
-    // --- FUNGSI BARU UNTUK MENGAMBIL DATA GAMIFIKASI ---
     private fun fetchGamificationStats(userId: String) {
         val gamificationRef = db.collection("users").document(userId).collection("gamification").document("summary")
 

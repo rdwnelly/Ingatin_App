@@ -42,7 +42,6 @@ class AddTugasActivity : AppCompatActivity() {
 
     private var deadlineCalendar = Calendar.getInstance()
 
-    // --- KODE BARU DIMULAI DI SINI ---
     // Launcher untuk meminta izin notifikasi.
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
@@ -151,7 +150,7 @@ class AddTugasActivity : AppCompatActivity() {
         }
     }
 
-    // --- FUNGSI BARU UNTUK PROSES PENYIMPANAN ---
+
     private fun proceedToSaveTugas() {
         val namaTugas = etNamaTugas.text.toString().trim()
         val deskripsi = etDeskripsiTugas.text.toString().trim()

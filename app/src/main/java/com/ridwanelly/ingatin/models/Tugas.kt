@@ -5,7 +5,7 @@ import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentId
 import kotlinx.parcelize.Parcelize
 
-@Parcelize // Anotasi penting untuk otomatisasi
+@Parcelize
 data class Tugas(
     @DocumentId
     val id: String? = null,
@@ -16,7 +16,6 @@ data class Tugas(
     val matkulId: String? = null,
     val userId: String? = null,
     val completedAt: Timestamp? = null
-) : Parcelable { // Implementasikan Parcelable
-    // Konstruktor kosong yang dibutuhkan oleh Firestore
+) : Parcelable {
     constructor() : this(null, null, null, null, false, null, null, null)
 }

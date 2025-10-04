@@ -116,7 +116,6 @@ class MainActivity : AppCompatActivity(), JadwalAdapter.OnItemClickListener {
         startActivity(intent)
     }
 
-    // --- FUNGSI BARU UNTUK SWIPE-TO-DELETE ---
     private fun setupSwipeToDelete() {
         val itemTouchHelperCallback = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
             override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean {
